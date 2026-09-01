@@ -4,6 +4,8 @@ A lightweight local monitor for Fronius GEN24 systems. It records high-resolutio
 
 The application runs continuously on a Raspberry Pi, listens on its own configurable port, and does not depend on Fronius Solar.web or another cloud service.
 
+**German documentation:** [Benutzerhandbuch und Interpretation der Ergebnisse](docs/handbuch-de.md)
+
 ## Features
 
 - Polls two local Fronius Solar API endpoints per measurement cycle
@@ -14,7 +16,7 @@ The application runs continuously on a Raspberry Pi, listens on its own configur
 - PV DC power, inverter AC power, and separate values for both MPPTs
 - Configured export limit, distance from the limit, battery state, and plateau detection
 - Evidence levels instead of unsupported certainty
-- Load-step detection as a verified lower bound for additional available PV power
+- Load-step detection as an observed lower bound for additional available PV power under controlled conditions
 - Daily maxima and durations near or probably at the export limit
 - Daily chart with averages while preserving short PV and export peaks
 - Responsive, accessible frontend without external CDN assets
@@ -169,8 +171,10 @@ The Solar API does **not** expose the currently available uncurtailed PV power. 
 It classifies observable evidence:
 
 - `Possible`: Grid export is within the configured tolerance of the export limit.
-- `Likely`: The battery is also full or is accepting almost no charging power.
-- `Very likely`: Grid export remains on a stable plateau at the limit for the configured observation window.
+- `Likely`: Grid export is near the limit and either the battery is full or a stable plateau at the limit is present.
+- `Very likely`: Grid export remains on a stable plateau at the limit while the battery is full.
+
+The score shown by the dashboard is a heuristic evidence score, **not a statistical probability**.
 
 A single cloud-related measurement can accidentally be close to the limit. A sustained plateau is materially stronger evidence.
 
@@ -179,10 +183,11 @@ A single cloud-related measurement can accidentally be close to the limit. A sus
 This is the strongest local test without changing inverter settings:
 
 1. Wait until the battery is full and grid export is stable at the configured limit.
-2. Switch on a known large load, for example a 2 kW heater.
-3. If `P_PV` rises by approximately the additional load while grid export remains at the limit, the monitor records a `LOAD_STEP` event.
+2. Prefer stable irradiance without fast-moving clouds.
+3. Switch on a known large load, for example a 2 kW heater.
+4. If `P_PV` rises by approximately the additional load while grid export remains at the limit, the monitor records a `LOAD_STEP` event.
 
-The observed PV increase is reported as a verified **lower bound** for additional available power, not as an exact amount of previously lost power.
+The observed PV increase is reported as a **lower-bound observation under these test conditions**, not as an exact amount of previously lost power. Repeating the test under stable irradiance makes the evidence substantially stronger.
 
 ## Data retention
 
@@ -250,7 +255,7 @@ public/    HTML, CSS, JavaScript, and SVG chart
 test/      Unit and integration tests
 config/    Example configuration
 scripts/   systemd unit and installer
-docs/      API and architecture decisions
+docs/      API, German guide, and architecture decisions
 ```
 
 ## Troubleshooting
