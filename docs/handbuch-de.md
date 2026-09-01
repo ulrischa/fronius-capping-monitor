@@ -148,6 +148,42 @@ Gesundheitsstatus der Anwendung prüfen:
 curl http://127.0.0.1:3200/api/v1/health
 ```
 
+### Dienst stoppen, starten oder länger pausieren
+
+Den laufenden Monitor vorübergehend stoppen:
+
+```bash
+sudo systemctl stop fronius-monitor
+```
+
+Dabei wird nur der aktuelle Prozess beendet. Der automatische Start beim nächsten Systemstart bleibt aktiviert.
+
+Wieder starten:
+
+```bash
+sudo systemctl start fronius-monitor
+```
+
+Nach einer Konfigurationsänderung neu starten:
+
+```bash
+sudo systemctl restart fronius-monitor
+```
+
+Soll der Monitor länger pausieren und auch nach einem Neustart des Raspberry Pi nicht automatisch starten, Dienst gleichzeitig stoppen und deaktivieren:
+
+```bash
+sudo systemctl disable --now fronius-monitor
+```
+
+Später wieder für den automatischen Start aktivieren und sofort starten:
+
+```bash
+sudo systemctl enable --now fronius-monitor
+```
+
+Kurz gesagt: `stop` ist für eine vorübergehende Pause geeignet, `disable --now` für eine längere Stilllegung. Die bereits gespeicherten Messdaten bleiben dabei erhalten.
+
 ## 5. Wichtige Konfigurationswerte
 
 ### `froniusHost`
