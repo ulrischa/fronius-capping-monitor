@@ -105,3 +105,33 @@ test('compacts old raw measurements into minute aggregates without changing the 
   assert.equal(chart[0].maximumPvDcW, 10000);
   assert.equal(chart[0].averageMppt1W, 6451);
 });
+
+test('rolls back duration updates when a measurement insert fails', (context) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'fronius-rollback-'));
+  const database = new MonitorDatabase(path.join(directory, 'monitor.sqlite'));
+  context.after(() => {
+    database.close();
+    fs.rmSync(directory, { recursive: true, force: true });
+  });
+
+  const first = makeNormalizedSample({
+    recordedAtMs: Date.parse('2026-09-01T11:22:00Z'),
+  });
+  database.insertMeasurement(first, {
+    level: 'LIKELY', score: 65, isNearLimit: true, hasPlateau: false, reasons: [],
+  });
+
+  const invalidAnalysis = {
+    level: null, score: 65, isNearLimit: true, hasPlateau: false, reasons: [],
+  };
+  assert.throws(
+    () => database.insertMeasurement(makeNormalizedSample({
+      recordedAtMs: first.recordedAtMs + 5000,
+    }), invalidAnalysis),
+    /NOT NULL constraint failed/,
+  );
+
+  const summary = database.getDaySummary(first.localDate);
+  assert.equal(summary.sampleCount, 1);
+  assert.equal(summary.nearLimitDurationMs, 0);
+});
