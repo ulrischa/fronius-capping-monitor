@@ -6,9 +6,8 @@ Implement one low-dependency Node.js service that polls the local Fronius Solar 
 
 ## Architecture Decisions
 
-- Node.js instead of Python because collector, API, and website share one runtime and one service.
 - Plain JavaScript and native HTTP/fetch instead of TypeScript, Express, or a frontend framework to eliminate the build step.
-- `better-sqlite3` instead of Node's still non-stable `node:sqlite` API.
+- Built-in `node:sqlite` instead of an external native package.
 - Browser polling of the local REST API instead of WebSockets; the Fronius poller remains independent and adaptive.
 - Evidence levels and load-step lower bounds instead of invented lost-energy estimates.
 
@@ -53,7 +52,7 @@ Implement one low-dependency Node.js service that polls the local Fronius Solar 
 | Weather resembles curtailment | High | Use evidence levels and reasons; require plateau/full battery or load-step evidence for stronger claims |
 | Short peaks disappear in charts | Medium | Store raw samples and return average plus min/max per chart bucket |
 | Database grows indefinitely | Medium | Compact older raw data into minute aggregates and retain daily summaries/events |
-| Native SQLite package install fails | Medium | Target current Node LTS and document build-tool fallback for Raspberry Pi |
+| Unsupported Node version | Medium | Require and validate Node 24.15 or newer from the Node 24 LTS line |
 
 ## Open Questions
 

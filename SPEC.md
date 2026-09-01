@@ -8,21 +8,20 @@ The application must not present estimated uncurtailed output or lost energy as 
 
 ## Tech Stack
 
-- Node.js 24 LTS, ECMAScript modules, plain JavaScript
+- Node.js 24.15 or newer from the Node 24 LTS line, ECMAScript modules, plain JavaScript
 - Native Node.js HTTP server and `fetch`
-- SQLite through `better-sqlite3`
+- SQLite through the built-in `node:sqlite` module
 - Plain HTML, CSS, SVG, and browser JavaScript
 - Native `node:test` test runner
 - One long-running systemd service; no cron and no build step
 
 ## Commands
 
-- Install: `npm ci --ignore-scripts`, inspect the dependency, then `npm rebuild better-sqlite3`
-- Development: `npm run dev`
-- One API sample: `npm run sample`
-- Test: `npm test`
-- Lint/syntax check: `npm run check`
-- Production: `npm start`
+- Development: `node --watch src/index.js`
+- One API sample: `node src/index.js --sample`
+- Test: `node --test`
+- Syntax check: `npm run check` (optional npm shortcut)
+- Production: `node src/index.js`
 
 ## Project Structure
 

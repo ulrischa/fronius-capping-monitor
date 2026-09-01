@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Replaced the external `better-sqlite3` package with Node's built-in SQLite module
+- Removed npm, Python, and compiler requirements from Raspberry Pi installation
+- Rewrote the README in English with dependency-free operating instructions
+
 ## 1.0.0 - 2026-09-01
 
 ### Added

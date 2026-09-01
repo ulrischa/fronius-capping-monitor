@@ -14,17 +14,9 @@ The monitor must continuously collect local Fronius data and also serve a respon
 
 ## Decision
 
-Use Node.js 24 LTS, ECMAScript modules, plain browser JavaScript, a native HTTP server, and SQLite through `better-sqlite3`. Run collector and web server in one systemd service. Use no cron, TypeScript, React, Express, or CDN assets.
+Use Node.js 24.15 or newer from the Node 24 LTS line, ECMAScript modules, plain browser JavaScript, a native HTTP server, and the built-in `node:sqlite` module. Run collector and web server in one systemd service. Use no cron, TypeScript, React, Express, external npm packages, or CDN assets.
 
 ## Alternatives Considered
-
-### Python
-
-Python is an excellent fit for the collector alone. With a website, however, it introduces the same application layers while splitting the user's preferred JavaScript workflow across two languages.
-
-### Node's built-in `node:sqlite`
-
-It removes the only native dependency, but the official Node.js documentation still marks it as a release candidate rather than stable. The monitor favors the mature `better-sqlite3` API.
 
 ### Express and Chart.js
 
@@ -37,6 +29,7 @@ Cron is unsuitable for adaptive 2–60 second polling, stateful plateau detectio
 ## Consequences
 
 - One long-running process owns collection, analysis, database access, and the website.
-- Installation requires one native SQLite package; current supported Node releases normally receive prebuilt binaries.
+- Installation requires only a system-wide Node.js runtime and Git.
+- SQLite is provided by Node itself, so there is no native add-on or package installation step.
 - The frontend has no build step and remains usable without internet access.
 - The REST API is read-only and versioned from the first release.
