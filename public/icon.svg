@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Fronius Curtailment Monitor</title>
+  <rect width="64" height="64" rx="10" fill="#10212b"/>
+  <circle cx="22" cy="21" r="8" fill="#f3a712"/>
+  <path d="M22 6v6M22 30v6M7 21h6M31 21h6M11.5 10.5l4.2 4.2M28.3 27.3l4.2 4.2M32.5 10.5l-4.2 4.2M15.7 27.3l-4.2 4.2" stroke="#f3a712" stroke-width="3" stroke-linecap="round"/>
+  <path d="M10 53l10-9 8 5 12-16 14 8" fill="none" stroke="#e8f0f2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

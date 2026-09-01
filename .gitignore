@@ -1,0 +1,12 @@
+node_modules/
+data/*
+!data/.gitkeep
+config/config.json
+*.log
+*.zip
+.env
+.env.*
+coverage/
+.DS_Store
+*.pem
+*.key

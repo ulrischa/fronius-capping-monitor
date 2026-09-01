@@ -1,0 +1,29 @@
+{
+  "froniusHost": "192.168.178.50",
+  "deviceId": 1,
+  "dcPeakW": 14260,
+  "exportLimitPercent": 60,
+  "exportLimitW": null,
+  "port": 3200,
+  "bindAddress": "0.0.0.0",
+  "timeZone": "Europe/Berlin",
+  "databasePath": "data/fronius-monitor.sqlite",
+  "polling": {
+    "fastMs": 2000,
+    "normalMs": 10000,
+    "nightMs": 60000,
+    "requestTimeoutMs": 5000
+  },
+  "analysis": {
+    "limitToleranceW": 60,
+    "nightThresholdW": 50,
+    "fullSocPercent": 99.5,
+    "plateauWindowSeconds": 90,
+    "minimumPlateauSamples": 12,
+    "loadStepMinimumW": 500
+  },
+  "retention": {
+    "rawDays": 14,
+    "maintenanceIntervalMinutes": 60
+  }
+}

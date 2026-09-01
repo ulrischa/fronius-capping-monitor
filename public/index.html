@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10212b">
+  <title>PV-Monitor | Fronius Curtailment Monitor</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" focusable="false">
+          <circle cx="16" cy="16" r="5"></circle>
+          <path d="M16 2v5M16 25v5M2 16h5M25 16h5M6.1 6.1l3.5 3.5M22.4 22.4l3.5 3.5M25.9 6.1l-3.5 3.5M9.6 22.4l-3.5 3.5"></path>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <h1>Fronius Curtailment Monitor</h1>
+        <p>Lokale Messung und Evidenz zur Einspeisebegrenzung</p>
+      </div>
+      <div class="connection" id="connection-status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="connection-label">Verbinde …</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div class="notice notice-demo" id="demo-notice" hidden>
+      <strong>Demo-Modus:</strong> Die angezeigten Werte sind Beispieldaten, keine Messung deiner Anlage.
+    </div>
+    <div class="notice notice-error" id="error-notice" role="alert" hidden></div>
+
+    <section class="live-section" aria-labelledby="live-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Live</p>
+          <h2 id="live-title">Aktueller Energiefluss</h2>
+        </div>
+        <p class="timestamp">Stand <time id="live-time">–</time></p>
+      </div>
+
+      <div class="live-layout">
+        <article class="primary-reading" aria-labelledby="pv-label">
+          <div class="reading-icon solar-icon" aria-hidden="true">☀</div>
+          <div>
+            <h3 id="pv-label">PV-Erzeugung</h3>
+            <p class="reading-value" id="pv-value">–</p>
+            <p class="reading-meta">DC-Leistung am aktuellen Arbeitspunkt</p>
+          </div>
+        </article>
+
+        <div class="flow-readings">
+          <article class="flow-reading export-reading">
+            <h3>Netzeinspeisung</h3>
+            <p class="flow-value" id="export-value">–</p>
+            <p class="flow-detail" id="export-detail">Limit –</p>
+            <div class="limit-track" aria-hidden="true"><span id="limit-progress"></span></div>
+          </article>
+          <article class="flow-reading">
+            <h3>Hausverbrauch</h3>
+            <p class="flow-value" id="load-value">–</p>
+            <p class="flow-detail">AC-seitig am Smart Meter</p>
+          </article>
+          <article class="flow-reading">
+            <h3>Batterie</h3>
+            <p class="flow-value" id="battery-value">–</p>
+            <p class="flow-detail" id="battery-detail">SOC –</p>
+          </article>
+          <article class="flow-reading">
+            <h3>Wechselrichter</h3>
+            <p class="flow-value" id="inverter-value">–</p>
+            <p class="flow-detail">AC-Wirkleistung</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="evidence-section" aria-labelledby="evidence-title">
+      <div class="evidence-summary">
+        <div>
+          <p class="eyebrow">Abregelung</p>
+          <h2 id="evidence-title">Evidenzbewertung</h2>
+        </div>
+        <div class="evidence-badge" id="evidence-badge" data-level="NOT_DETECTED">
+          <span id="evidence-label">Noch keine Daten</span>
+          <strong id="evidence-score">–</strong>
+        </div>
+      </div>
+      <div class="evidence-body">
+        <div>
+          <p class="lead" id="evidence-lead">Die Bewertung startet nach der ersten gültigen Messung.</p>
+          <ul class="reason-list" id="reason-list"></ul>
+        </div>
+        <dl class="limit-facts">
+          <div><dt>Konfiguriertes Limit</dt><dd id="configured-limit">–</dd></div>
+          <div><dt>Abstand zum Limit</dt><dd id="limit-distance">–</dd></div>
+          <div><dt>Akku voll</dt><dd id="battery-full">–</dd></div>
+          <div><dt>Plateau erkannt</dt><dd id="plateau-detected">–</dd></div>
+        </dl>
+      </div>
+      <p class="method-note" id="method-note">Die API liefert keine ungedrosselte Leistung. Deshalb wird hier keine scheinbar exakte Verlustleistung erfunden.</p>
+    </section>
+
+    <section class="day-section" aria-labelledby="day-title">
+      <div class="section-heading day-heading">
+        <div>
+          <p class="eyebrow">Verlauf</p>
+          <h2 id="day-title">Tagesauswertung</h2>
+        </div>
+        <div class="date-controls">
+          <button type="button" class="button-icon" id="previous-day" aria-label="Vorheriger Tag">‹</button>
+          <div>
+            <label for="selected-date">Tag</label>
+            <input type="date" id="selected-date">
+          </div>
+          <button type="button" class="button-icon" id="next-day" aria-label="Nächster Tag">›</button>
+          <button type="button" class="button-secondary" id="today-button">Heute</button>
+        </div>
+      </div>
+
+      <div class="day-summary" aria-label="Kennzahlen des gewählten Tages">
+        <div><span>PV-Maximum</span><strong id="day-pv-max">–</strong></div>
+        <div><span>Max. Einspeisung</span><strong id="day-export-max">–</strong></div>
+        <div><span>Nahe am Limit</span><strong id="day-near-limit">–</strong></div>
+        <div><span>Wahrscheinlich abgeregelt</span><strong id="day-likely">–</strong></div>
+        <div><span>Nachgewiesene Zusatzleistung</span><strong id="day-extra">–</strong></div>
+      </div>
+
+      <figure class="chart-panel" aria-labelledby="power-chart-title" aria-describedby="chart-description">
+        <div class="chart-header">
+          <div>
+            <h3 id="power-chart-title">Leistungsverlauf</h3>
+            <p id="chart-description">Mittelwerte als Linien; kurze PV-Spitzen bleiben als gestrichelte Maximalspur erhalten.</p>
+          </div>
+          <ul class="chart-legend" aria-label="Diagrammlegende">
+            <li><span class="legend-line pv"></span>PV Mittel</li>
+            <li><span class="legend-line peak"></span>PV Spitze</li>
+            <li><span class="legend-line mppt1"></span>MPPT 1</li>
+            <li><span class="legend-line mppt2"></span>MPPT 2</li>
+            <li><span class="legend-line export"></span>Einspeisung</li>
+            <li><span class="legend-line limit"></span>Limit</li>
+            <li><span class="legend-line load"></span>Haus</li>
+            <li><span class="legend-line soc"></span>Akku-SOC</li>
+          </ul>
+        </div>
+        <div class="chart-wrap" id="chart-wrap">
+          <svg id="power-chart" viewBox="0 0 1000 390" role="img" aria-label="Leistungsverlauf des gewählten Tages"></svg>
+          <p class="empty-state" id="chart-empty" hidden>Für diesen Tag liegen keine Messwerte vor.</p>
+        </div>
+        <figcaption>Orange Flächen markieren Zeitabschnitte mit mindestens wahrscheinlicher Abregelung. Sie sind Indizien, keine Messung der ungedrosselten Leistung.</figcaption>
+      </figure>
+
+      <details class="data-details">
+        <summary>Messwerttabelle anzeigen</summary>
+        <div class="table-wrap">
+          <table>
+            <caption>Messpunkte des gewählten Tages</caption>
+            <thead>
+              <tr>
+                <th scope="col">Zeit</th>
+                <th scope="col">PV Mittel</th>
+                <th scope="col">PV Spitze</th>
+                <th scope="col">Einspeisung</th>
+                <th scope="col">Haus</th>
+                <th scope="col">MPPT 1</th>
+                <th scope="col">MPPT 2</th>
+                <th scope="col">SOC</th>
+                <th scope="col">Evidenz</th>
+              </tr>
+            </thead>
+            <tbody id="measurement-table"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <section class="technical-section" aria-labelledby="technical-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Technik</p>
+          <h2 id="technical-title">MPPT und Datenqualität</h2>
+        </div>
+      </div>
+      <dl class="technical-grid">
+        <div><dt>MPPT 1</dt><dd id="mppt1-power">–</dd><small id="mppt1-detail">–</small></div>
+        <div><dt>MPPT 2</dt><dd id="mppt2-power">–</dd><small id="mppt2-detail">–</small></div>
+        <div><dt>Summe MPPT</dt><dd id="mppt-total">–</dd><small>Spannung × Strom</small></div>
+        <div><dt>Messwertalter</dt><dd id="data-age">–</dd><small id="poll-interval">Abfrageintervall –</small></div>
+      </dl>
+    </section>
+  </main>
+
+  <footer>
+    <p>Lokaler Monitor · keine Cloud erforderlich · Messwerte und Schlussfolgerungen werden getrennt ausgewiesen</p>
+  </footer>
+
+  <div class="visually-hidden" id="live-announcer" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Tasks
+
+- [x] Task 1: Define config, measurement contract, and analysis tests
+  - Acceptance: Tests describe correct signs, endpoint parsing, evidence levels, and load-step lower bounds.
+  - Verify: `npm test`
+  - Files: `config/config.example.json`, `test/*.test.js`
+- [x] Task 2: Implement parsing and analysis
+  - Acceptance: Both supplied Fronius response shapes normalize without ambiguity.
+  - Verify: Unit tests pass.
+  - Files: `src/fronius.js`, `src/analysis.js`, `src/config.js`
+- [x] Task 3: Add SQLite persistence and compaction
+  - Acceptance: Measurements, events, minute aggregates, and daily summaries survive restart.
+  - Verify: Temporary-database integration tests pass.
+  - Files: `src/database.js`, `test/database.test.js`
+- [x] Task 4: Add collector and REST API
+  - Acceptance: A fake Fronius server is polled, errors recover, and API ranges are bounded.
+  - Verify: HTTP integration test passes.
+  - Files: `src/collector.js`, `src/server.js`, `test/integration.test.js`
+- [x] Task 5: Add responsive dashboard
+  - Acceptance: Live values, evidence, summary, chart peaks, and accessible table render on mobile and desktop.
+  - Verify: Browser smoke check has no console errors.
+  - Files: `public/index.html`, `public/styles.css`, `public/app.js`
+- [x] Task 6: Package Raspberry Pi operation
+  - Acceptance: systemd service uses configurable port and data directory; README covers install, update, backup, and troubleshooting.
+  - Verify: Shell syntax and documented commands are checked.
+  - Files: `scripts/*`, `README.md`, `docs/decisions/*`
