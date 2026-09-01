@@ -5,7 +5,7 @@
   "description": "Local Fronius GEN24 monitoring and export-curtailment evidence dashboard",
   "type": "module",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=24.15 <25"
   },
   "scripts": {
     "start": "node src/index.js",
@@ -14,8 +14,5 @@
     "demo": "node src/index.js --demo",
     "test": "node --test",
     "check": "node --check src/analysis.js && node --check src/collector.js && node --check src/config.js && node --check src/database.js && node --check src/demo.js && node --check src/fronius.js && node --check src/index.js && node --check src/server.js && node --check public/app.js"
-  },
-  "dependencies": {
-    "better-sqlite3": "13.0.3"
   }
 }

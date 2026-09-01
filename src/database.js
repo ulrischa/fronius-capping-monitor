@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-import Database from 'better-sqlite3';
+import { DatabaseSync } from 'node:sqlite';
 
 function maxNullable(...values) {
   const finite = values.filter(Number.isFinite);
@@ -49,12 +48,29 @@ function mapMeasurement(row) {
 export class MonitorDatabase {
   constructor(databasePath) {
     fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-    this.db = new Database(databasePath);
-    this.db.pragma('journal_mode = WAL');
-    this.db.pragma('synchronous = NORMAL');
-    this.db.pragma('foreign_keys = ON');
+    this.db = new DatabaseSync(databasePath, {
+      allowBareNamedParameters: true,
+      timeout: 5000,
+    });
+    this.db.exec(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA synchronous = NORMAL;
+      PRAGMA foreign_keys = ON;
+    `);
     this.initializeSchema();
     this.prepareStatements();
+  }
+
+  runTransaction(operation) {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      const result = operation();
+      this.db.exec('COMMIT');
+      return result;
+    } catch (error) {
+      if (this.db.isTransaction) this.db.exec('ROLLBACK');
+      throw error;
+    }
   }
 
   initializeSchema() {
@@ -167,7 +183,7 @@ export class MonitorDatabase {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    this.insertMeasurementTransaction = this.db.transaction((measurement, analysis) => {
+    this.insertMeasurementTransaction = (measurement, analysis) => this.runTransaction(() => {
       const previous = this.previousStatement.get(measurement.recordedAtMs);
       if (previous) {
         const elapsedMs = measurement.recordedAtMs - previous.recorded_at_ms;
@@ -375,7 +391,7 @@ export class MonitorDatabase {
 
   compactBefore(cutoffMs) {
     const alignedCutoffMs = Math.floor(cutoffMs / 60000) * 60000;
-    const transaction = this.db.transaction(() => {
+    return this.runTransaction(() => {
       this.db.prepare(`
         INSERT OR IGNORE INTO minute_measurements (
           minute_ms, local_date, sample_count, average_pv_dc_w, maximum_pv_dc_w,
@@ -399,10 +415,11 @@ export class MonitorDatabase {
         WHERE recorded_at_ms < ?
         GROUP BY CAST(recorded_at_ms / 60000 AS INTEGER)
       `).run(alignedCutoffMs);
-      return this.db.prepare('DELETE FROM measurements WHERE recorded_at_ms < ?').run(alignedCutoffMs).changes;
+      const rawRowsDeleted = this.db
+        .prepare('DELETE FROM measurements WHERE recorded_at_ms < ?')
+        .run(alignedCutoffMs).changes;
+      return { rawRowsDeleted };
     });
-
-    return { rawRowsDeleted: transaction() };
   }
 
   close() {

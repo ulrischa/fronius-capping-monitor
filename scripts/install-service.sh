@@ -8,16 +8,15 @@ fi
 
 source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 node_path=$(command -v node || true)
-npm_path=$(command -v npm || true)
 
-if [[ -z ${node_path} || -z ${npm_path} ]]; then
-  echo "Node.js 24 LTS and npm are required." >&2
+if [[ -z ${node_path} ]]; then
+  echo "Node.js 24.15 or newer is required." >&2
   exit 1
 fi
 
-node_major=$(${node_path} --eval "process.stdout.write(process.versions.node.split('.')[0])")
-if [[ ${node_major} -ne 24 ]]; then
-  echo "Node.js 24 LTS is required; found $(${node_path} --version)." >&2
+node_supported=$(${node_path} --eval "const [major, minor] = process.versions.node.split('.').map(Number); process.stdout.write(String(major === 24 && minor >= 15))")
+if [[ ${node_supported} != true ]]; then
+  echo "Node.js 24.15 or newer from the Node 24 LTS line is required; found $(${node_path} --version)." >&2
   exit 1
 fi
 
@@ -44,8 +43,6 @@ else
   config_created=false
 fi
 
-cd /opt/fronius-monitor
-"${npm_path}" ci --omit=dev --ignore-scripts
 chown -R root:root /opt/fronius-monitor
 chmod -R u=rwX,go=rX /opt/fronius-monitor
 
